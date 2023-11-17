@@ -6,9 +6,9 @@ dotenv.config();
 // Retrieve environment variables
 const { APP_PORT, APP_HOST, API_PATH, FORECAST_API_KEY } = process.env;
 
-/*
+/**
   @enum Environment variables
-**/
+*/
 const ENV = {
     APP: {
         PORT: APP_PORT,

@@ -5,7 +5,7 @@ class Api {
     init(fastify, options, done) {
         const { services } = options;
 
-        // Register collection path & service
+        // Register Forecast API
         fastify.register(initForecast, {
             services: {
                 forecast: services.get(API_PATH.FORECAST)
@@ -13,6 +13,10 @@ class Api {
             prefix: API_PATH.FORECAST
         });
         done();
+    }
+
+    performRequest() {
+
     }
 };
 

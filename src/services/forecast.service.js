@@ -1,10 +1,13 @@
 import { ENV, HTTP_CODE, HTTP_MESSAGE, HTTP_METHOD, HTTP_HEADER } from '../common/common.js';
+import { HttpService } from './HttpService.js';
 
-class ForecastService {
+class ForecastService extends HttpService {
     /**
      * @return {!ForecastService}
      */
     constructor() {
+        super();
+
         /**
          * @private
          * @constant
@@ -12,11 +15,6 @@ class ForecastService {
          */
         this.API_URL = ENV.API.FORECAST.API_PATH;
 
-        /**
-         * @private
-         * @constant
-         * @type {!Set<string>}
-         */
         /**
          * @private
          * @constant
@@ -83,20 +81,16 @@ class ForecastService {
             const requestParams = this.buildForecastParams(bodyObject);
 
             // Run request
-            const response = await fetch(`${this.API_URL}?${requestParams}`, {
+            const response = await this.request({
+                url: `${this.API_URL}?${requestParams}`,
                 method: HTTP_METHOD.GET,
                 headers: { [HTTP_HEADER.KEY.CONTENT_TYPE]: HTTP_HEADER.VALUE.APPLICATION_JSON },
             });
 
-            // Convert to json
-            const responseObject = await response.json();
-
-            // Handle API error
-            return responseObject.statusCode === HTTP_CODE.INTERNAL_SERVER_ERROR
-                ? { statusCode: HTTP_CODE.INTERNAL_SERVER_ERROR, message: responseObject.message }
-                : responseObject;
+            // Return answer
+            return response;
         }
-            // Error while parsing JSON or fetch
+        // Error while parsing JSON
         catch (error) {
             console.error(error);
             return { statusCode: HTTP_CODE.INTERNAL_SERVER_ERROR, message: HTTP_MESSAGE.INTERNAL_SERVER_ERROR };
@@ -104,6 +98,7 @@ class ForecastService {
     }
 };
 
+// Singleton instance
 const forecastService = new ForecastService();
 
 export { forecastService };
