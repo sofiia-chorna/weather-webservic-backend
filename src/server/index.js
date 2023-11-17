@@ -1,18 +1,18 @@
-import { DATA_TYPE } from '../common/data/data-type.enum.js';
-import { collection } from '../services/services.js';
+import { API_PATH } from '../common/common.js';
 import { Server } from './Server.js';
 import { api } from '../api/index.js';
+import { forecastService } from '../services/services.js';
 
-/*
-  Handlers map
- */
-// const services = new Map([
-//     [DATA_TYPE.COLLECTION, collection],
-// ]);
+/**
+ * Handler Map
+*/
+const services = new Map([
+    [API_PATH.FORECAST, forecastService],
+]);
 
 // Singleton instance
 const server = new Server({
-    // services: services,
+    services: services,
     api: api,
 });
 

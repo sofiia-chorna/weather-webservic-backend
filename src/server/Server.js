@@ -2,7 +2,6 @@ import fastify from 'fastify';
 import cors from '@fastify/cors';
 import qs from 'qs';
 import { ENV, EXIT_CODE } from '../common/common.js';
-import { initApi } from '../api/Api.js';
 
 class Server {
     /**
@@ -57,7 +56,7 @@ class Server {
         this.createServer();
 
         // Add the routes
-        this.registerRoutes();
+        await this.registerRoutes();
 
         // Start the server
         await this.startServer();
@@ -103,9 +102,9 @@ class Server {
     /**
      * @private
      */
-    registerRoutes() {
+    async registerRoutes() {
         this.server.register(this.api.init, {
-            // services: this.services,
+            services: this.services,
             prefix: ENV.APP.API_PATH
         });
     }
