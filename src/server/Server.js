@@ -5,7 +5,7 @@ import { ENV, EXIT_CODE } from '../common/common.js';
 
 class Server {
     /**
-     * @param {{services: Map<string, function(*)>, api: Api}=} params
+     * @param {{api: Api}=} params
      * @return {!Server}
      */
     constructor(params) {
@@ -28,13 +28,6 @@ class Server {
          * @type {string}
          */
         this.HOST = ENV.APP.HOST ?? '0.0.0.0';
-
-        /**
-         * @private
-         * @constant
-         * @type {Map<string, function(*)>}
-         */
-        this.services = params.services ?? new Map();
 
         /**
          * @private
@@ -104,7 +97,6 @@ class Server {
      */
     async registerRoutes() {
         this.server.register(this.api.init, {
-            services: this.services,
             prefix: ENV.APP.API_PATH
         });
     }

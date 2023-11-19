@@ -1,5 +1,5 @@
 import { ENV, HTTP_CODE, HTTP_MESSAGE, HTTP_METHOD, HTTP_HEADER } from '../common/common.js';
-import { HttpService } from './HttpService.js';
+import { HttpService } from './http.service.js';
 
 class ForecastService extends HttpService {
     /**
@@ -20,7 +20,7 @@ class ForecastService extends HttpService {
          * @constant
          * @type {!Set<string>}
          */
-        this.mandatoryKeys = new Set(['q', 'days']);
+        this.mandatoryKeys = new Set([]);
 
         /**
          * @private
@@ -28,7 +28,7 @@ class ForecastService extends HttpService {
          * @type {!Map<string, string>}
          */
         this.defaultKeys = new Map([
-            ['key', ENV.API.FORECAST.KEY],
+            ['apikey', ENV.API.FORECAST.KEY],
         ]);
     }
 
@@ -65,7 +65,7 @@ class ForecastService extends HttpService {
      * @params {!Object | string} body
      * return <!Promise<!Object>>
      */
-    async get(body) {
+    async getCurrentForecast(body) {
         try {
             // Get payload as json
             const bodyObject = typeof body === 'string' ? JSON.parse(body) : body;

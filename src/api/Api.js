@@ -1,22 +1,25 @@
-import { API_PATH } from '../common/common.js';
-import { initForecast } from './forecast.api.js';
-
 class Api {
-    init(fastify, options, done) {
-        const { services } = options;
-
-        // Register Forecast API
-        fastify.register(initForecast, {
-            services: {
-                forecast: services.get(API_PATH.FORECAST)
-            },
-            prefix: API_PATH.FORECAST
-        });
-        done();
+    /**
+     * @param {{routes: Map<string, function(*)>}=} params
+     * @return {!Api}
+     */
+    constructor(params) {
+        /**
+         * @private
+         * @constant
+         * @type {Map<string, function(*)>}
+         */
+        Api.routes = params.routes ?? new Map();
     }
 
-    performRequest() {
-
+    init(fastify, _options, done) {
+        // Register all routes
+        for (const [routeName, routeApi] of Api.routes) {
+            fastify.register(routeApi, {
+                prefix: routeName
+            });
+        }
+        done();
     }
 };
 

@@ -1,20 +1,18 @@
-import { API_PATH, HTTP_METHOD, CONTROLLER_HOOK } from '../common/common.js';
+import { FORECAST_API_PATH, HTTP_METHOD, CONTROLLER_HOOK } from '../common/common.js';
+import { forecastService } from '../services/services.js';
 
-function initForecast(fastify, options, done) {
-    // Retrieve services
-    const { forecast: forecastService } = options.services;
-
-    // RETRIEVE FORECAST
+function forecastApi(fastify, _options, done) {
+    // Get Current Forecast
     fastify.route({
         method: HTTP_METHOD.POST,
-        url: API_PATH.ROOT,
+        url: FORECAST_API_PATH.CURRENT,
 
         // Handle request
         [CONTROLLER_HOOK.HANDLER]: async (request) => {
-            return await forecastService.get(request.body);
+            return await forecastService.getCurrentForecast(request.body);
         },
     });
     done();
 }
 
-export { initForecast };
+export { forecastApi };
