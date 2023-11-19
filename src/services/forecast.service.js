@@ -1,85 +1,54 @@
-import { ENV, HTTP_CODE, HTTP_MESSAGE, HTTP_METHOD, HTTP_HEADER } from '../common/common.js';
-import { HttpService } from './http.service.js';
+import { ENV, HTTP_CODE, HTTP_MESSAGE, HTTP_METHOD, HTTP_HEADER, FORECAST_API_PATH } from '../common/common.js';
+import { ApiService } from './api.service.js';
 
-class ForecastService extends HttpService {
+class ForecastService extends ApiService {
     /**
      * @return {!ForecastService}
      */
     constructor() {
-        super();
-
-        /**
-         * @private
-         * @constant
-         * @type {string}
-         */
-        this.API_URL = ENV.API.FORECAST.API_PATH;
-
-        /**
-         * @private
-         * @constant
-         * @type {!Set<string>}
-         */
-        this.mandatoryKeys = new Set([]);
-
-        /**
-         * @private
-         * @constant
-         * @type {!Map<string, string>}
-         */
-        this.defaultKeys = new Map([
-            ['apikey', ENV.API.FORECAST.KEY],
-        ]);
-    }
-
-    /**
-     * @params {!Object} body
-     * return <!Array<string>>
-     */
-    checkMandatoryKeys(body) {
-        const missingKeys = [];
-        this.mandatoryKeys.forEach((key) => {
-            if (!body[key]) {
-                missingKeys.push(key);
-            }
+        super({
+            url: ENV.API.FORECAST.API_PATH,
+            defaultKeys: {
+                ['apikey']: ENV.API.FORECAST.KEY,
+                ['details']: true,
+                ['metric']: true,
+            },
+            routeMap: new Map([
+                [FORECAST_API_PATH.CURRENT, '/currentconditions/v1/30'],
+                [FORECAST_API_PATH.CURRENT_HOURLY, '/currentconditions/v1/30'],
+                [FORECAST_API_PATH.FIVE_DAYS, '/forecasts/v1/daily/5day/30'],
+                [FORECAST_API_PATH.TEN_DAYS, '/forecasts/v1/daily/10day/30'],
+                [FORECAST_API_PATH.FIFTEEN_DAYS, '/forecasts/v1/daily/15day/30'],
+            ]),
         });
-        return missingKeys;
     }
 
     /**
-     * @params {!Object} body
-     * return <string>
-     */
-    buildForecastParams(body) {
-        // Collect default params and params from payload
-        const params = Array.from(this.defaultKeys).concat(Object.entries(body));
-
-        // Build URL string with params
-        return params.reduce((curUrl, [key, name], index) => {
-            const firstSymbol = index === 0 ? '' : '&';
-            return `${curUrl}${firstSymbol}${key}=${name}`;
-        }, '');
-    }
-
-    /**
-     * @params {!Object | string} body
+     * @params {!Object} params
      * return <!Promise<!Object>>
      */
-    async getCurrentForecast(body) {
+    async getCurrentForecast(params) {
+        const url = this.buildUrlFromParams({
+            replaceRoute: FORECAST_API_PATH.CURRENT,
+            params: params,
+            useDefaultKeys: true
+        });
+
+        // Run request
+        return await this.request({
+            url: url,
+            method: HTTP_METHOD.GET,
+            headers: { [HTTP_HEADER.KEY.CONTENT_TYPE]: HTTP_HEADER.VALUE.APPLICATION_JSON },
+            params: params
+        });
+    }
+
+    /**
+     * @params {!Object} params
+     * @return <!Promise<!Object>>
+     */
+    async getCurrentForecastHourly(params) {
         try {
-            // Get payload as json
-            const bodyObject = typeof body === 'string' ? JSON.parse(body) : body;
-
-            // Check if payload has all mandatory keys
-            const missingKeys = this.checkMandatoryKeys(bodyObject);
-            if (missingKeys.length !== 0) {
-                const message = `Missing mandatory keys: ${missingKeys.join(', ')}`;
-                return { statusCode: HTTP_CODE.BAD_REQUEST, message: message };
-            }
-
-            // Append params
-            const requestParams = this.buildForecastParams(bodyObject);
-
             // Run request
             const response = await this.request({
                 url: `${this.API_URL}?${requestParams}`,
@@ -90,7 +59,7 @@ class ForecastService extends HttpService {
             // Return answer
             return response;
         }
-        // Error while parsing JSON
+            // Error while parsing JSON
         catch (error) {
             console.error(error);
             return { statusCode: HTTP_CODE.INTERNAL_SERVER_ERROR, message: HTTP_MESSAGE.INTERNAL_SERVER_ERROR };

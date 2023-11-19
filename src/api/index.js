@@ -1,4 +1,4 @@
-import { Api } from './Api.js';
+import { Router } from './Router.js';
 import { API_PATH } from '../common/common.js';
 import { forecastApi } from './forecast.api.js';
 
@@ -10,8 +10,8 @@ const routes = new Map([
 ]);
 
 // Singleton instance
-const api = new Api({
+const router = new Router({
     routes: routes,
 });
 
-export { api };
+export { router };

@@ -1,7 +1,7 @@
-class Api {
+class Router {
     /**
      * @param {{routes: Map<string, function(*)>}=} params
-     * @return {!Api}
+     * @return {!Router}
      */
     constructor(params) {
         /**
@@ -9,12 +9,12 @@ class Api {
          * @constant
          * @type {Map<string, function(*)>}
          */
-        Api.routes = params.routes ?? new Map();
+        Router.routes = params.routes ?? new Map();
     }
 
     init(fastify, _options, done) {
         // Register all routes
-        for (const [routeName, routeApi] of Api.routes) {
+        for (const [routeName, routeApi] of Router.routes) {
             fastify.register(routeApi, {
                 prefix: routeName
             });
@@ -23,4 +23,4 @@ class Api {
     }
 };
 
-export { Api };
+export { Router };

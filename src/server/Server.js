@@ -5,7 +5,7 @@ import { ENV, EXIT_CODE } from '../common/common.js';
 
 class Server {
     /**
-     * @param {{api: Api}=} params
+     * @param {{router: Router}=} params
      * @return {!Server}
      */
     constructor(params) {
@@ -32,9 +32,9 @@ class Server {
         /**
          * @private
          * @constant
-         * @type {Api}
+         * @type {Router}
          */
-        this.api = params.api ?? null;
+        this.router = params.router ?? null;
     }
 
     /**
@@ -96,7 +96,7 @@ class Server {
      * @private
      */
     async registerRoutes() {
-        this.server.register(this.api.init, {
+        this.server.register(this.router.init, {
             prefix: ENV.APP.API_PATH
         });
     }
