@@ -72,7 +72,6 @@ class Server {
      * @private
      */
     createServer() {
-        // TODO add comments
         this.server = fastify({
             logger: {
                 transport: {
@@ -84,11 +83,17 @@ class Server {
                     }
                 },
             },
+
+            // Use a custom querystring parser based on the qs library
             querystringParser: (str) => qs.parse(str)
         });
+
+        // Add a custom content type parser for handling all content types as buffers
         this.server.addContentTypeParser('*', { parseAs: 'buffer' }, (_request, body, done) => {
             done(null, body);
         });
+
+        // Register the CORS plugin to enable Cross-Origin Resource Sharing
         this.server.register(cors);
     }
 

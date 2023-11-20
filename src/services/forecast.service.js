@@ -40,6 +40,11 @@ class ForecastService extends ApiService {
         });
     }
 
+    /**
+     * @params {!Object} params
+     * @param {number} numberOfDays
+     * @return <!Promise<!Object>>
+     */
     async getDailyForecast(params, numberOfDays) {
         const url = this.buildUrlFromParams({
             replaceRoute: FORECAST_API_PATH.FIVE_DAYS,
