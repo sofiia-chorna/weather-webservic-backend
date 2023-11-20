@@ -5,9 +5,9 @@ const FORECAST_API_PATH = {
     ROOT: '/',
     CURRENT: '/current',
     CURRENT_HOURLY: '/current/hourly',
-    FIVE_DAYS: '/5day',
-    TEN_DAYS: '/10day',
-    FIFTEEN_DAYS: '/15day'
+    TOMORROW: '/tomorrow',
+    THREE_DAYS: '/3days',
+    FIVE_DAYS: '/5days',
 };
 
 export { FORECAST_API_PATH };
