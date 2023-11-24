@@ -1,7 +1,7 @@
 /**
  @enum FORECAST API paths
  */
-const FORECAST_API_PATH = {
+const WEATHER_API_PATH = {
     ROOT: '/',
     CURRENT: '/current',
     CURRENT_HOURLY: '/current/hourly',
@@ -10,4 +10,4 @@ const FORECAST_API_PATH = {
     FIVE_DAYS: '/5days',
 };
 
-export { FORECAST_API_PATH };
+export { WEATHER_API_PATH };

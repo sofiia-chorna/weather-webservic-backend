@@ -1,12 +1,12 @@
 import { Router } from './Router.js';
 import { API_PATH } from '../common/common.js';
-import { forecastApi } from './forecast.api.js';
+import { weatherApi } from './weatherApi.js';
 
 /**
  * Handler Map
  */
 const routes = new Map([
-    [API_PATH.FORECAST, forecastApi],
+    [API_PATH.WEATHER, weatherApi],
 ]);
 
 // Singleton instance

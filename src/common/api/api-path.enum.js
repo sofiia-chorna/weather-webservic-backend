@@ -3,7 +3,7 @@
 */
 const API_PATH = {
     ROOT: '/',
-    FORECAST: '/forecast',
+    WEATHER: '/weather',
 };
 
 export { API_PATH };

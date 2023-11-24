@@ -44,13 +44,13 @@ class ApiService extends HttpService {
         const { replaceRoute, params, useDefaultKeys } = options;
 
         // Combine default keys with user params
-        const allParams = useDefaultKeys ? { ...params, ...this.defaultKeys } : params;
+        const allParams = useDefaultKeys ? { ...this.defaultKeys, ...params } : params;
 
         // Replace app route with api route
         const route = this.routeMap.get(replaceRoute);
 
         // Get full url
-        const url = new URL(`${this.API_URL}${route}`);
+        const url = new URL(`${this.API_URL}${!!route ? route: ''}`);
 
         // Append params
         url.search = new URLSearchParams(allParams).toString();

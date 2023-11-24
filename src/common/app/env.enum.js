@@ -16,7 +16,7 @@ const ENV = {
         API_PATH: '/api',
     },
     API: {
-        FORECAST: {
+        WEATHER: {
             API_PATH: API_PATH,
             KEY: FORECAST_API_KEY
         },
