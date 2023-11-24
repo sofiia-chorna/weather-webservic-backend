@@ -3,9 +3,6 @@ import cors from '@fastify/cors';
 import qs from 'qs';
 import { ENV, EXIT_CODE } from '../common/common.js';
 
-import fastifyPrintRoutes from 'fastify-print-routes'
-
-
 class Server {
     /**
      * @param {{router: Router}=} params
@@ -104,7 +101,6 @@ class Server {
      * @private
      */
     async registerRoutes() {
-        await this.server.register(fastifyPrintRoutes)
         this.server.register(this.router.init, {
             prefix: ENV.APP.API_PATH
         });
