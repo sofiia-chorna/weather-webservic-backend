@@ -10,7 +10,6 @@ class ForecastService extends ApiService {
             url: ENV.API.WEATHER.API_PATH,
             defaultKeys: {
                 ['appid']: ENV.API.WEATHER.KEY,
-                ['temp_unit']: true,
                 ['units']: 'metric',
             },
             routeMap: new Map([
@@ -42,25 +41,49 @@ class ForecastService extends ApiService {
 
     /**
      * @params {!Object} params
-     * @param {number} numberOfDays
      * @return <!Promise<!Object>>
      */
-    async getDailyForecast(params, numberOfDays) {
+    async getDailyForecast(params) {
         const url = this.buildUrlFromParams({
-            params: { ...params, exclude: 'minutely,hourly,daily' },
+            params: { ...params, exclude: 'hourly' },
             useDefaultKeys: true
         });
 
         // Run request
-        const apiResponse = await this.request({
+        const response = await this.request({
             url: url,
             method: HTTP_METHOD.GET,
             headers: { [HTTP_HEADER.KEY.CONTENT_TYPE]: HTTP_HEADER.VALUE.APPLICATION_JSON }
         });
+        // TODO add check for the error response
 
-        return apiResponse;
+        // Pick necessary weather props
+        const weather = response.current?.weather?.map((v) => ({ main: v.main, description: v.description })) ?? null;
+        const { temp, pressure, humidity, visibility, wind_speed: windSpeed, uvi, clouds, sunrise, sunset } = response.current;
+        const { min: tempMin, max: tempMax } = response.daily[0]?.temp ?? {};
+
+        // Calculate precipitation
+        const precipitation = Math.max(...response.minutely?.map((v) => v.precipitation)) ?? null;
+
+        // Build response
+        return {
+            coord: { lon: response.lon, lat: response.lat },
+            weather: weather,
+            temp: temp,
+            temp_min: tempMin,
+            temp_max: tempMax,
+            pressure: pressure,
+            humidity: humidity,
+            visibility: visibility,
+            wind_speed: windSpeed,
+            precipitation: precipitation,
+            clouds: clouds,
+            uvi: uvi,
+            sunrise: sunrise,
+            sunset: sunset
+        };
     }
-};
+}
 
 // Singleton instance
 const weatherService = new ForecastService();

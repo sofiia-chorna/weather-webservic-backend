@@ -8,27 +8,21 @@ function weatherApi(fastify, _options, done) {
         method: HTTP_METHOD.GET,
         url: WEATHER_API_PATH.CURRENT,
 
-        // Validate city is present in the params
+        // Validate lat et lon are present in the params
         [CONTROLLER_HOOK.ON_REQUEST]: (request, reply, done) => {
             const error = checkMandatoryParams(request.query, ['lat', 'lon']);
             if (error) {
                 reply.code(HTTP_CODE.BAD_REQUEST).send({ code: HTTP_CODE.BAD_REQUEST, message: error });
                 return;
             }
-            // const isUnitsCorrect = c
 
             // All mandatory parameters are present, continue to the route handler
             done()
         },
 
-        [CONTROLLER_HOOK.PRE_HANDLER]: (request, _reply, done) => {
-            request.query = { ...request.query, };
-            done();
-        },
-
         // Handle request
         [CONTROLLER_HOOK.HANDLER]: async (request, reply) => {
-            const result = await weatherService.getDailyForecast(request.query, 1);
+            const result = await weatherService.getDailyForecast(request.query);
             reply.code(HTTP_CODE.OK).send(result);
         },
     });
