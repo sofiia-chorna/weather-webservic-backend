@@ -95,26 +95,21 @@ class ForecastService extends ApiService {
                 );
         }
 
-        // Pick necessary weather props
-        const weather = response.current?.weather?.map((v) => ({ main: v.main, description: v.description })) ?? null;
+        // Pick necessary properties
         const { temp, pressure, humidity, visibility, wind_speed: windSpeed, uvi, clouds, sunrise, sunset } = response.current;
-        const { min: tempMin, max: tempMax } = response.daily[0]?.temp ?? {};
-
-        // Calculate precipitation
-        const precipitation = Math.max(...response.minutely?.map((v) => v.precipitation)) ?? null;
 
         // Build response
         return {
             coord: { lon: response.lon, lat: response.lat },
-            weather: weather,
+            weather: response.current.weather.map((v) => ({ main: v.main, description: v.description })),
             temp: temp,
-            temp_min: tempMin,
-            temp_max: tempMax,
+            temp_min: response.daily[0]?.temp.min ?? null,
+            temp_max: response.daily[0]?.temp.max ?? null,
             pressure: pressure,
             humidity: humidity,
             visibility: visibility,
             wind_speed: windSpeed,
-            precipitation: precipitation,
+            precipitation: Math.max(...response.minutely?.map((v) => v.precipitation)) ?? null,
             clouds: clouds,
             uvi: uvi,
             sunrise: sunrise,
