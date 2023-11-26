@@ -1,3 +1,3 @@
-import { checkMandatoryParams } from './api/api.helper.js';
+import { checkMandatoryParams, checkDateParams } from './api/api.helper.js';
 
-export { checkMandatoryParams };
+export { checkMandatoryParams, checkDateParams };

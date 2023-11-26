@@ -1,6 +1,6 @@
 import { WEATHER_API_PATH, HTTP_METHOD, CONTROLLER_HOOK, HTTP_CODE } from '../common/common.js';
 import { weatherService } from '../services/services.js';
-import { checkMandatoryParams } from '../helpers/helpers.js';
+import { checkMandatoryParams, checkDateParams } from '../helpers/helpers.js';
 
 function weatherApi(fastify, _options, done) {
     // Get Current Forecast
@@ -34,9 +34,10 @@ function weatherApi(fastify, _options, done) {
 
         // Validate city is present in the params
         [CONTROLLER_HOOK.ON_REQUEST]: (request, reply, done) => {
-            const error = checkMandatoryParams(request.query, ['city']);
-            if (error) {
-                reply.code(HTTP_CODE.BAD_REQUEST).send({ code: HTTP_CODE.BAD_REQUEST, message: error });
+            const errorMandatoryParams = checkMandatoryParams(request.query, ['lat', 'lon', 'date']);
+            const errorIncorrectDate = checkDateParams(request.query, ['date']);
+            if (errorMandatoryParams || errorIncorrectDate) {
+                reply.code(HTTP_CODE.BAD_REQUEST).send({ code: HTTP_CODE.BAD_REQUEST, message: errorMandatoryParams || errorIncorrectDate });
                 return;
             }
 
@@ -46,7 +47,7 @@ function weatherApi(fastify, _options, done) {
 
         // Handle request
         [CONTROLLER_HOOK.HANDLER]: async (request, reply) => {
-            const result = await weatherService.getCurrentForecastHourly(request.query);
+            const result = await weatherService.getDailyForecast(request.query, true);
             reply.code(HTTP_CODE.OK).send(result);
         },
     });

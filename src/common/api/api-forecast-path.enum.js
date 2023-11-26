@@ -1,5 +1,5 @@
 /**
- @enum FORECAST API paths
+ @enum WEATHER API paths
  */
 const WEATHER_API_PATH = {
     ROOT: '/',

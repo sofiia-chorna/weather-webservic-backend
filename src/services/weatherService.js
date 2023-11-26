@@ -21,31 +21,37 @@ class ForecastService extends ApiService {
     }
 
     /**
-     * @params {!Object} params
-     * @return <!Promise<!Object>>
+     * @params {!Array<!Object>} minutes
+     * @params {string} date
+     * @return <!Array<!Object>
      */
-    async getCurrentForecastHourly(params) {
-        const url = this.buildUrlFromParams({
-            replaceRoute: WEATHER_API_PATH.CURRENT_HOURLY,
-            params: params,
-            useDefaultKeys: true
-        });
+    getHourPrecipitation(minutes, date) {
+        // Convert to milliseconds
+        const timestamps = new Date(date * 1000);
 
-        // Run request
-        return await this.request({
-            url: url,
-            method: HTTP_METHOD.GET,
-            headers: { [HTTP_HEADER.KEY.CONTENT_TYPE]: HTTP_HEADER.VALUE.APPLICATION_JSON }
-        });
+        // Get first minute of the hour
+        const firstMinute = new Date(timestamps);
+        firstMinute.setMinutes(0, 0, 0);
+
+        // Get last minute of the hour
+        const lastMinute = new Date(timestamps);
+        lastMinute.setMinutes(59, 59, 999);
+
+        // Pick minute precipitations of the hour
+        const precipitations = minutes.filter((v) => v.dt > firstMinute && v.dt < lastMinute).map((v) => v.precipitation);
+
+        // Get max value of them
+        return Math.max(...precipitations);
     }
 
     /**
      * @params {!Object} params
+     * @params {boolean[false]} hourly
      * @return <!Promise<!Object>>
      */
-    async getDailyForecast(params) {
+    async getDailyForecast(params, hourly = false) {
         const url = this.buildUrlFromParams({
-            params: { ...params, exclude: 'hourly' },
+            params: params,
             useDefaultKeys: true
         });
 
@@ -56,6 +62,38 @@ class ForecastService extends ApiService {
             headers: { [HTTP_HEADER.KEY.CONTENT_TYPE]: HTTP_HEADER.VALUE.APPLICATION_JSON }
         });
         // TODO add check for the error response
+
+        // Hourly Forecast
+        if (hourly) {
+            const startTime = new Date(`${params.date}T00:00:00`).getTime();
+            const endTime = new Date(`${params.date}T23:59:59`).getTime();
+            return response.hourly
+                // Pick forecast objects related to the current date
+                .filter((v) => {
+                    const time = new Date(v.dt * 1000).getTime();
+                    return time > startTime && time < endTime;
+                })
+
+                // Build expected payload
+                .map((value) => ({
+                        time: value.dt,
+                        coord: { lon: response.lon, lat: response.lat },
+                        weather: value.weather.map((v) => ({ main: v.main, description: v.description })),
+                        temp: value.temp,
+                        temp_min: response.daily[0]?.temp.min ?? null,
+                        temp_max: response.daily[0]?.temp.max ?? null,
+                        pressure: value.pressure,
+                        humidity: value.humidity,
+                        visibility: value.visibility,
+                        wind_speed: value.wind_speed,
+                        precipitation: this.getHourPrecipitation(response.minutely, value.dt), // only minutely has precipitation
+                        clouds: value.clouds,
+                        uvi: value.uvi,
+                        sunrise: response.current.sunrise,
+                        sunset: response.current.sunset
+                    })
+                );
+        }
 
         // Pick necessary weather props
         const weather = response.current?.weather?.map((v) => ({ main: v.main, description: v.description })) ?? null;
