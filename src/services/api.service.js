@@ -37,7 +37,7 @@ class ApiService extends HttpService {
     }
 
     /**
-     * @type {{replaceRoute: string, params: !Object, useDefaultKeys: boolean[true]}} options
+     * @param {{replaceRoute: string, params: !Object, useDefaultKeys: boolean[true]}} options
      * @return {string}
      */
     buildUrlFromParams(options) {
@@ -47,10 +47,10 @@ class ApiService extends HttpService {
         const allParams = useDefaultKeys ? { ...this.defaultKeys, ...params } : params;
 
         // Replace app route with api route
-        const route = this.routeMap.get(replaceRoute);
+        const route = this.routeMap.get(replaceRoute) ?? '';
 
         // Get full url
-        const url = new URL(`${this.API_URL}${!!route ? route: ''}`);
+        const url = new URL(`${this.API_URL}${route}`);
 
         // Append params
         url.search = new URLSearchParams(allParams).toString();

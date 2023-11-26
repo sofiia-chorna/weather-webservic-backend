@@ -19,21 +19,21 @@ class MapService extends ApiService {
     }
 
     /**
-     * @params {!Object} params
-     * @return <!Promise<!Object>>
+     * @param {!Object} options
+     * @return {!Promise<!Object>}
      */
-    async getAddress(params) {
+    async getAddress(options) {
         const url = this.buildUrlFromParams({
             replaceRoute: MAP_API_PATH.ADDRESS,
-            params: { lon: params.longitude, lat: params.latitude },
-            useDefaultKeys: true
+            params: { lon: options.longitude, lat: options.latitude },
+            useDefaultKeys: true,
         });
 
         // Run request
         const response = await this.request({
             url: url,
             method: HTTP_METHOD.GET,
-            headers: { [HTTP_HEADER.KEY.CONTENT_TYPE]: HTTP_HEADER.VALUE.APPLICATION_JSON }
+            headers: { [HTTP_HEADER.KEY.CONTENT_TYPE]: HTTP_HEADER.VALUE.APPLICATION_JSON },
         });
 
         // Correct response
@@ -46,7 +46,7 @@ class MapService extends ApiService {
                 state: firstEntry.state,
                 formatted: `${country}, ${firstEntry.state}, ${firstEntry.name}`,
                 lat: firstEntry.lat,
-                lon: firstEntry.lon
+                lon: firstEntry.lon,
             };
         }
 

@@ -2,8 +2,8 @@ import { HTTP_CODE, HTTP_MESSAGE } from '../common/common.js';
 
 class HttpService {
     /**
-     * @params {!Object | string} body
-     * return <!Promise<!Object>>
+     * @param {!Object} params
+     * @return {!Promise<!Object>}
      */
     async request(params) {
         const { url, body, method, headers } = params;
@@ -19,9 +19,11 @@ class HttpService {
             const responseObject = await response.json();
 
             // Handle API error
-            return responseObject.statusCode === HTTP_CODE.INTERNAL_SERVER_ERROR
-                ? { statusCode: HTTP_CODE.INTERNAL_SERVER_ERROR, message: responseObject.message }
-                : responseObject;
+            if (responseObject.statusCode === HTTP_CODE.INTERNAL_SERVER_ERROR) {
+                return { statusCode: HTTP_CODE.INTERNAL_SERVER_ERROR, message: responseObject.message };
+            }
+
+            return responseObject;
         }
         // Error while fetching
         catch (error) {
