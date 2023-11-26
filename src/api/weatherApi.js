@@ -64,7 +64,7 @@ function weatherApi(fastify, _options, done) {
         // Validate mandatory params are present
         [CONTROLLER_HOOK.ON_REQUEST]: (request, reply, done) => {
             const errorMandatoryParams = checkMandatoryParams(request.query, ['lat', 'lon', 'start_date', 'end_date']);
-            const dateError = ['start_date', 'end_date'].map((p) => checkDateParams(request.query, p))
+            const dateError = ['start_date', 'end_date'].map((p) => checkDateParams(request.query, [p]))
                 .filter((p) => p !== null)
                 .join(', ');
             const error = errorMandatoryParams || dateError;
@@ -84,54 +84,6 @@ function weatherApi(fastify, _options, done) {
                 reply.code(result.code).send({ code: result.code, message: `${result.message}: ${result.parameters?.join(', ')} : ''`});
                 return;
             }
-            reply.code(HTTP_CODE.OK).send(result);
-        },
-    });
-
-    // Get Forecast for 3 days
-    fastify.route({
-        method: HTTP_METHOD.GET,
-        url: WEATHER_API_PATH.THREE_DAYS,
-
-        // Validate city is present in the params
-        [CONTROLLER_HOOK.ON_REQUEST]: (request, reply, done) => {
-            const error = checkMandatoryParams(request.query, ['city']);
-            if (error) {
-                reply.code(HTTP_CODE.BAD_REQUEST).send({ code: HTTP_CODE.BAD_REQUEST, message: error });
-                return;
-            }
-
-            // All mandatory parameters are present, continue to the route handler
-            done()
-        },
-
-        // Handle request
-        [CONTROLLER_HOOK.HANDLER]: async (request, reply) => {
-            const result = await weatherService.getDailyForecast(request.query, 3);
-            reply.code(HTTP_CODE.OK).send(result);
-        },
-    });
-
-    // Get Forecast for 5 days
-    fastify.route({
-        method: HTTP_METHOD.GET,
-        url: WEATHER_API_PATH.FIVE_DAYS,
-
-        // Validate city is present in the params
-        [CONTROLLER_HOOK.ON_REQUEST]: (request, reply, done) => {
-            const error = checkMandatoryParams(request.query, ['city']);
-            if (error) {
-                reply.code(HTTP_CODE.BAD_REQUEST).send({ code: HTTP_CODE.BAD_REQUEST, message: error });
-                return;
-            }
-
-            // All mandatory parameters are present, continue to the route handler
-            done()
-        },
-
-        // Handle request
-        [CONTROLLER_HOOK.HANDLER]: async (request, reply) => {
-            const result = await weatherService.getDailyForecast(request.query, 5);
             reply.code(HTTP_CODE.OK).send(result);
         },
     });

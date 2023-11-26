@@ -1,10 +1,10 @@
 import { ENV, HTTP_METHOD, HTTP_HEADER, WEATHER_API_PATH } from '../common/common.js';
-import { formatDate, getTimestampInSeconds, generateRandomOffset, addOffset } from '../helpers/helpers.js';
+import { formatDate, dateToTimestampInSeconds, generateRandomOffset, addOffset } from '../helpers/helpers.js';
 import { ApiService } from './api.service.js';
 
-class ForecastService extends ApiService {
+class WeatherService extends ApiService {
     /**
-     * @return {!ForecastService}
+     * @return {!WeatherService}
      */
     constructor() {
         super({
@@ -22,7 +22,7 @@ class ForecastService extends ApiService {
     /**
      * @params {!Array<!Object>} minutes
      * @params {string} date
-     * @return <!Array<!Object>
+     * @return {<!Array<!Object>}
      */
     getHourPrecipitation(minutes, date) {
         // Convert to milliseconds
@@ -45,16 +45,16 @@ class ForecastService extends ApiService {
 
     /**
      * @params {!Array<!Object>} weather
-     * @return <!Array<!Object>
+     * @return <!Array<!Object>}
      */
     pickDataFromWeather(weather) {
         return weather.map((v) => ({ main: v.main, description: v.description }));
     }
 
     /**
-     * @params {!Object} params
-     * @params {boolean[false]} hourly
-     * @return <!Promise<!Object>>
+     * @param {!Object} params
+     * @param {boolean[false]} hourly
+     * @return {!Promise<!Object>}
      */
     async getDailyForecast(params, hourly = false) {
         const url = this.buildUrlFromParams({
@@ -143,7 +143,7 @@ class ForecastService extends ApiService {
         while (curDate <= new Date(endDate))
         {
             const url = this.buildUrlFromParams({
-                params: { lat: params.lat, lon: params.lon, dt: getTimestampInSeconds(curDate)  },
+                params: { lat: params.lat, lon: params.lon, dt: dateToTimestampInSeconds(curDate)  },
                 replaceRoute: WEATHER_API_PATH.ROOT,
                 useDefaultKeys: true
             });
@@ -192,6 +192,6 @@ class ForecastService extends ApiService {
 }
 
 // Singleton instance
-const weatherService = new ForecastService();
+const weatherService = new WeatherService();
 
 export { weatherService };

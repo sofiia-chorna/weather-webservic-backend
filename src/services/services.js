@@ -1,3 +1,4 @@
-import { weatherService } from './weatherService.js';
+import { weatherService } from './weather.service.js';
+import { mapService } from './map.service.js';
 
-export { weatherService };
+export { weatherService, mapService };
