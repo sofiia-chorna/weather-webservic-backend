@@ -32,7 +32,7 @@ function weatherApi(fastify, _options, done) {
         method: HTTP_METHOD.GET,
         url: WEATHER_API_PATH.CURRENT_HOURLY,
 
-        // Validate city is present in the params
+        // Validate mandatory params are present
         [CONTROLLER_HOOK.ON_REQUEST]: (request, reply, done) => {
             const errorMandatoryParams = checkMandatoryParams(request.query, ['lat', 'lon', 'date']);
             const errorIncorrectDate = checkDateParams(request.query, ['date']);
@@ -48,18 +48,26 @@ function weatherApi(fastify, _options, done) {
         // Handle request
         [CONTROLLER_HOOK.HANDLER]: async (request, reply) => {
             const result = await weatherService.getDailyForecast(request.query, true);
+            if (result.code) {
+                reply.code(result.code).send({ code: result.code, message: `${result.message}: ${result.parameters?.join(', ')} : ''`});
+                return;
+            }
             reply.code(HTTP_CODE.OK).send(result);
         },
     });
 
-    // Get Forecast for tomorrow
+    // Get Forecast for date period
     fastify.route({
         method: HTTP_METHOD.GET,
-        url: WEATHER_API_PATH.TOMORROW,
+        url: WEATHER_API_PATH.ROOT,
 
-        // Validate city is present in the params
+        // Validate mandatory params are present
         [CONTROLLER_HOOK.ON_REQUEST]: (request, reply, done) => {
-            const error = checkMandatoryParams(request.query, ['city']);
+            const errorMandatoryParams = checkMandatoryParams(request.query, ['lat', 'lon', 'start_date', 'end_date']);
+            const dateError = ['start_date', 'end_date'].map((p) => checkDateParams(request.query, p))
+                .filter((p) => p !== null)
+                .join(', ');
+            const error = errorMandatoryParams || dateError;
             if (error) {
                 reply.code(HTTP_CODE.BAD_REQUEST).send({ code: HTTP_CODE.BAD_REQUEST, message: error });
                 return;
@@ -71,7 +79,11 @@ function weatherApi(fastify, _options, done) {
 
         // Handle request
         [CONTROLLER_HOOK.HANDLER]: async (request, reply) => {
-            const result = await weatherService.getDailyForecast(request.query, 1);
+            const result = await weatherService.getPeriodForecast(request.query);
+            if (result.code) {
+                reply.code(result.code).send({ code: result.code, message: `${result.message}: ${result.parameters?.join(', ')} : ''`});
+                return;
+            }
             reply.code(HTTP_CODE.OK).send(result);
         },
     });

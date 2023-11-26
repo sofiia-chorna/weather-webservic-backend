@@ -1,4 +1,5 @@
 import { ENV, HTTP_METHOD, HTTP_HEADER, WEATHER_API_PATH } from '../common/common.js';
+import { formatDate, getTimestampInSeconds, generateRandomOffset, addOffset } from '../helpers/helpers.js';
 import { ApiService } from './api.service.js';
 
 class ForecastService extends ApiService {
@@ -13,9 +14,7 @@ class ForecastService extends ApiService {
                 ['units']: 'metric',
             },
             routeMap: new Map([
-                // [WEATHER_API_PATH.CURRENT, '/currentconditions/v1/30'],
-                // [WEATHER_API_PATH.CURRENT_HOURLY, '/currentconditions/v1/30'],
-                // [WEATHER_API_PATH.FIVE_DAYS, '/forecasts/v1/daily/5day/30'],
+                [WEATHER_API_PATH.ROOT, '/timemachine'],
             ]),
         });
     }
@@ -45,6 +44,14 @@ class ForecastService extends ApiService {
     }
 
     /**
+     * @params {!Array<!Object>} weather
+     * @return <!Array<!Object>
+     */
+    pickDataFromWeather(weather) {
+        return weather.map((v) => ({ main: v.main, description: v.description }));
+    }
+
+    /**
      * @params {!Object} params
      * @params {boolean[false]} hourly
      * @return <!Promise<!Object>>
@@ -61,7 +68,11 @@ class ForecastService extends ApiService {
             method: HTTP_METHOD.GET,
             headers: { [HTTP_HEADER.KEY.CONTENT_TYPE]: HTTP_HEADER.VALUE.APPLICATION_JSON }
         });
-        // TODO add check for the error response
+
+        // Catch API errors
+        if (response.code) {
+            return response;
+        }
 
         // Hourly Forecast
         if (hourly) {
@@ -78,7 +89,7 @@ class ForecastService extends ApiService {
                 .map((value) => ({
                         time: value.dt,
                         coord: { lon: response.lon, lat: response.lat },
-                        weather: value.weather.map((v) => ({ main: v.main, description: v.description })),
+                        weather: this.pickDataFromWeather(value.weather),
                         temp: value.temp,
                         temp_min: response.daily[0]?.temp.min ?? null,
                         temp_max: response.daily[0]?.temp.max ?? null,
@@ -101,7 +112,7 @@ class ForecastService extends ApiService {
         // Build response
         return {
             coord: { lon: response.lon, lat: response.lat },
-            weather: response.current.weather.map((v) => ({ main: v.main, description: v.description })),
+            weather: this.pickDataFromWeather(response.current.weather),
             temp: temp,
             temp_min: response.daily[0]?.temp.min ?? null,
             temp_max: response.daily[0]?.temp.max ?? null,
@@ -115,6 +126,68 @@ class ForecastService extends ApiService {
             sunrise: sunrise,
             sunset: sunset
         };
+    }
+
+    /**
+     * @params {!Object} params
+     * @return <!Promise<!Array<!Object>>>
+     */
+    async getPeriodForecast(params) {
+        const result = [];
+
+        // Pick dates from request params
+        const { start_date: startDate, end_date: endDate } = params;
+
+        // Iterate in the date period
+        const curDate = new Date(startDate);
+        while (curDate <= new Date(endDate))
+        {
+            const url = this.buildUrlFromParams({
+                params: { lat: params.lat, lon: params.lon, dt: getTimestampInSeconds(curDate)  },
+                replaceRoute: WEATHER_API_PATH.ROOT,
+                useDefaultKeys: true
+            });
+
+            // Run request
+            const response = await this.request({
+                url: url,
+                method: HTTP_METHOD.GET,
+                headers: { [HTTP_HEADER.KEY.CONTENT_TYPE]: HTTP_HEADER.VALUE.APPLICATION_JSON }
+            });
+
+            // Date is not available
+            if (response.code ?? response.cod) {
+                result.push({ coord: { lon: params.lon, lat: params.lat }, date: formatDate(curDate), weather: [] });
+            }
+
+            // Date available
+            else {
+                const dayWeather = response.data[0];
+                result.push({
+                    coord: { lon: response.lon, lat: response.lat },
+                    weather: this.pickDataFromWeather(dayWeather.weather),
+                    temp: dayWeather.temp,
+                    temp_min: addOffset(dayWeather.temp, -generateRandomOffset()), // mock, no data
+                    temp_max: addOffset(dayWeather.temp, generateRandomOffset()), // mock, no data
+                    pressure: dayWeather.pressure,
+                    humidity: dayWeather.humidity,
+                    visibility: dayWeather.visibility,
+                    wind_speed: dayWeather.wind_speed,
+                    precipitation: 0, // mock, no data
+                    clouds: dayWeather.clouds,
+                    uvi: Number(Math.random(10).toFixed(2)), // mock, no data
+                    sunrise: dayWeather.sunrise,
+                    sunset: dayWeather.sunset,
+                    date: formatDate(dayWeather.dt)
+                });
+            }
+
+            // Increment date
+            curDate.setDate(curDate.getDate() + 1);
+        }
+
+        // Done
+        return result;
     }
 }
 
