@@ -4,7 +4,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 // Retrieve environment variables
-const { APP_PORT, APP_HOST, WEATHER_API_PATH, MAP_API_PATH, FORECAST_API_KEY } = process.env;
+const { APP_PORT, APP_HOST, WEATHER_API_PATH, MAP_API_PATH, WEATHER_API_KEY, GEO_API_PATH, GEP_API_KEY } = process.env;
 
 /**
   @enum Environment variables
@@ -18,11 +18,15 @@ const ENV = {
     API: {
         WEATHER: {
             API_PATH: WEATHER_API_PATH,
-            KEY: FORECAST_API_KEY
+            KEY: WEATHER_API_KEY
         },
         MAP: {
             API_PATH: MAP_API_PATH,
-            KEY: FORECAST_API_KEY
+            KEY: WEATHER_API_KEY
+        },
+        GEO: {
+            API_PATH: GEO_API_PATH,
+            KEY: GEP_API_KEY
         },
     },
 };

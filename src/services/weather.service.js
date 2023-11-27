@@ -140,8 +140,7 @@ class WeatherService extends ApiService {
 
         // Iterate in the date period
         const curDate = new Date(startDate);
-        while (curDate <= new Date(endDate))
-        {
+        while (curDate <= new Date(endDate)) {
             const url = this.buildUrlFromParams({
                 params: { lat: params.lat, lon: params.lon, dt: dateToTimestampInSeconds(curDate)  },
                 replaceRoute: WEATHER_API_PATH.ROOT,
