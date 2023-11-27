@@ -1,5 +1,5 @@
 import { ENV, HTTP_HEADER, HTTP_METHOD, MAP_API_PATH } from '../common/common.js';
-import { ApiService } from './api.service.js';
+import { ApiService } from './abstract/api.service.js';
 import { getCountryNameByCode } from '../helpers/helpers.js';
 
 class MapService extends ApiService {

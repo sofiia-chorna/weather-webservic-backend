@@ -1,6 +1,6 @@
-import { ENV, HTTP_METHOD, HTTP_HEADER, WEATHER_API_PATH } from '../common/common.js';
+import { ENV, HTTP_METHOD, HTTP_HEADER, WEATHER_API_PATH, TEMPERATURE_UNITS, DISTANCE_UNITS, UNITS } from '../common/common.js';
 import { formatDate, dateToTimestampInSeconds, generateRandomOffset, addOffset } from '../helpers/helpers.js';
-import { ApiService } from './api.service.js';
+import { ApiService } from './abstract/api.service.js';
 
 class WeatherService extends ApiService {
     /**
@@ -11,7 +11,7 @@ class WeatherService extends ApiService {
             url: ENV.API.WEATHER.API_PATH,
             defaultKeys: {
                 ['appid']: ENV.API.WEATHER.KEY,
-                ['units']: 'metric',
+                ['units']: UNITS.METRIC,
             },
             routeMap: new Map([
                 [WEATHER_API_PATH.ROOT, '/timemachine'],
@@ -22,7 +22,7 @@ class WeatherService extends ApiService {
     /**
      * @params {!Array<!Object>} minutes
      * @params {string} date
-     * @return {<!Array<!Object>}
+     * @return {number}
      */
     getHourPrecipitation(minutes, date) {
         // Convert to milliseconds
@@ -45,10 +45,33 @@ class WeatherService extends ApiService {
 
     /**
      * @params {!Array<!Object>} weather
-     * @return <!Array<!Object>}
+     * @return {!Array<!Object>}
      */
     pickDataFromWeather(weather) {
         return weather.map((v) => ({ main: v.main, description: v.description }));
+    }
+
+    /**
+     * @params {!Object} params
+     * @return {string}
+     */
+    getUnits(params) {
+        const tempUnit = params['temp_unit']?.toLowerCase();
+        const distUnit = params['dist_unit']?.toLowerCase();
+
+        // No options provided
+        if (!tempUnit && !distUnit) {
+            return UNITS.METRIC;
+        }
+
+        // Check metric criteria
+        const isMetric = (tempUnit === TEMPERATURE_UNITS.CELSIUS) || (distUnit === DISTANCE_UNITS.METRE);
+
+        // Check imperial criteria
+        const isImperial = (tempUnit === TEMPERATURE_UNITS.FAHRENHEIT) || (distUnit === DISTANCE_UNITS.MILE);
+
+        // Get app units
+        return isMetric ? UNITS.METRIC : (isImperial ? UNITS.IMPERIAL : UNITS.KELVIN);
     }
 
     /**
@@ -58,7 +81,7 @@ class WeatherService extends ApiService {
      */
     async getDailyForecast(params, hourly = false) {
         const url = this.buildUrlFromParams({
-            params: params,
+            params: { ...params, units: this.getUnits(params) },
             useDefaultKeys: true
         });
 
@@ -70,8 +93,8 @@ class WeatherService extends ApiService {
         });
 
         // Catch API errors
-        if (response.code) {
-            return response;
+        if (response.code || response.cod) {
+            return { ...response, code: response.code || response.cod };
         }
 
         // Hourly Forecast
@@ -133,6 +156,7 @@ class WeatherService extends ApiService {
      * @return <!Promise<!Array<!Object>>>
      */
     async getPeriodForecast(params) {
+        const units = this.getUnits(params)
         const result = [];
 
         // Pick dates from request params
@@ -142,7 +166,7 @@ class WeatherService extends ApiService {
         const curDate = new Date(startDate);
         while (curDate <= new Date(endDate)) {
             const url = this.buildUrlFromParams({
-                params: { lat: params.lat, lon: params.lon, dt: dateToTimestampInSeconds(curDate)  },
+                params: { lat: params.lat, lon: params.lon, dt: dateToTimestampInSeconds(curDate), units: units },
                 replaceRoute: WEATHER_API_PATH.ROOT,
                 useDefaultKeys: true
             });

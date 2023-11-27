@@ -1,4 +1,4 @@
-import { HTTP_CODE, HTTP_MESSAGE } from '../common/common.js';
+import { HTTP_CODE, HTTP_MESSAGE } from '../../common/common.js';
 
 class HttpService {
     /**
