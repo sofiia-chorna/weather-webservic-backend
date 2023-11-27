@@ -1,5 +1,6 @@
 import { ENV, HTTP_HEADER, HTTP_METHOD, MAP_API_PATH } from '../common/common.js';
 import { ApiService } from './api.service.js';
+import { getUniqueByKey } from '../helpers/array/array.helper.js';
 
 class GeoService extends ApiService {
     /**
@@ -34,9 +35,14 @@ class GeoService extends ApiService {
             method: HTTP_METHOD.GET,
             headers: { [HTTP_HEADER.KEY.CONTENT_TYPE]: HTTP_HEADER.VALUE.APPLICATION_JSON },
         });
-        return response.features.map(({ properties: { country, state, city, lon, lat } }) => (
+
+        // Format payload
+        const entries = response.features.map(({ properties: { country, state, city, lon, lat }}) => (
             { country, state, city, lon, lat, formatted: `${country}, ${state}, ${city}`}
         ));
+
+        // Filter by city key
+        return getUniqueByKey(entries, 'city');
     }
 }
 

@@ -8,7 +8,7 @@ class Server {
      * @param {{router: Router}=} params
      * @return {!Server}
      */
-    constructor(params) {
+    constructor(params = {}) {
         /**
          * @private
          * @type {import('fastify').FastifyServer}
@@ -61,7 +61,7 @@ class Server {
      */
     async stopServer() {
         if (this.server) {
-            console.info('Try closing the server');
+            console.info('Closing the server');
             await this.server.close();
             console.info('Server has been closed');
         }
@@ -113,7 +113,7 @@ class Server {
     async startServer() {
         try {
             // Start the server
-            console.info('Try starting the server');
+            console.info('Starting the server');
             await this.server.listen({ port: this.PORT, address: this.HOST });
         }
         // Connection error

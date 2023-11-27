@@ -1,11 +1,12 @@
-import { checkMandatoryParams, checkDateParams } from './api/api.helper.js';
+import { checkMandatoryParams, checkDateParams, validateParams } from './api/api.helper.js';
 import { formatDate, dateToTimestampInSeconds } from './date/date.helper.js';
 import { generateRandomOffset, addOffset } from './number/number.helper.js';
 import { getCountryNameByCode } from './name/name.helper.js';
+import { getUniqueByKey } from './array/array.helper.js';
 
 export {
-    checkMandatoryParams, checkDateParams,
+    checkMandatoryParams, checkDateParams, validateParams,
     formatDate, dateToTimestampInSeconds,
     generateRandomOffset, addOffset,
-    getCountryNameByCode,
+    getCountryNameByCode, getUniqueByKey,
 };

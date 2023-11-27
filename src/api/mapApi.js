@@ -1,7 +1,7 @@
 import { MAP_API_PATH, HTTP_METHOD, CONTROLLER_HOOK, HTTP_CODE } from '../common/common.js';
 import { mapService } from '../services/services.js';
 import { geoService } from '../services/services.js';
-import { checkMandatoryParams } from '../helpers/helpers.js';
+import { validateParams } from '../helpers/helpers.js';
 
 function mapApi(fastify, _options, done) {
     // Get address from longitude and latitude
@@ -11,13 +11,9 @@ function mapApi(fastify, _options, done) {
 
         // Validate lon et lat are present in the params
         [CONTROLLER_HOOK.ON_REQUEST]: (request, reply, done) => {
-            const error = checkMandatoryParams(request.query, ['longitude', 'latitude']);
-            if (error) {
-                reply.code(HTTP_CODE.BAD_REQUEST).send({ code: HTTP_CODE.BAD_REQUEST, message: error });
+            if (!validateParams(request, reply, ['longitude', 'latitude'], [])) {
                 return;
             }
-
-            // All mandatory parameters are present, continue to the route handler
             done();
         },
 
@@ -35,13 +31,9 @@ function mapApi(fastify, _options, done) {
 
         // Validate text is present in the params
         [CONTROLLER_HOOK.ON_REQUEST]: (request, reply, done) => {
-            const error = checkMandatoryParams(request.query, ['text']);
-            if (error) {
-                reply.code(HTTP_CODE.BAD_REQUEST).send({ code: HTTP_CODE.BAD_REQUEST, message: error });
+            if (!validateParams(request, reply, ['text'], [])) {
                 return;
             }
-
-            // All mandatory parameters are present, continue to the route handler
             done();
         },
 

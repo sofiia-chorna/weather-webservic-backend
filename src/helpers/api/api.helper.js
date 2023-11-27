@@ -1,3 +1,5 @@
+import { HTTP_CODE } from '../../common/http/http-code.enum.js';
+
 /**
  * @param {!Object} params
  * @param {!Array<string>} mandatoryKeys
@@ -24,4 +26,31 @@ function checkDateParams(params, dateKeys) {
         : null;
 }
 
-export { checkMandatoryParams, checkDateParams };
+/**
+ * @param {import('fastify').FastifyRequest} request
+ * @param {import('fastify').FastifyReply} reply
+ * @param {!Array<string>} mandatoryParams
+ * @param {!Array<string>} dateParams
+ * @param {number} [errorCode=400]
+ * @return {boolean}
+ */
+function validateParams(request, reply, mandatoryParams, dateParams, errorCode = HTTP_CODE.BAD_REQUEST) {
+    // Check correctness
+    const mandatoryParamsErrors = checkMandatoryParams(request.query, mandatoryParams);
+    const dateValidationErrors = dateParams
+        .map((param) => checkDateParams(request.query, [param]))
+        .filter((error) => error !== null)
+        .join(', ');
+
+    // Send error if needed
+    const error = mandatoryParamsErrors || dateValidationErrors;
+    if (error) {
+        reply.code(errorCode).send({ code: errorCode, message: error });
+        return false;
+    }
+
+    // No errors
+    return true;
+}
+
+export { checkMandatoryParams, checkDateParams, validateParams };
