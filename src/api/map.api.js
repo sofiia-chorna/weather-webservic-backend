@@ -2,6 +2,7 @@ import { MAP_API_PATH, HTTP_METHOD, CONTROLLER_HOOK, HTTP_CODE } from '../common
 import { mapService } from '../services/services.js';
 import { geoService } from '../services/services.js';
 import { validateParams } from '../helpers/helpers.js';
+import { ApiError } from './ApiError.js';
 
 function mapApi(fastify, _options, done) {
     // Get address from longitude and latitude
@@ -11,15 +12,18 @@ function mapApi(fastify, _options, done) {
 
         // Validate lon et lat are present in the params
         [CONTROLLER_HOOK.ON_REQUEST]: (request, reply, done) => {
-            if (!validateParams(request, reply, ['longitude', 'latitude'], [])) {
-                return;
+            if (validateParams(request, reply, ['lon', 'lat'], [])) {
+                done();
             }
-            done();
         },
 
         // Handle request
         [CONTROLLER_HOOK.HANDLER]: async (request, reply) => {
             const result = await mapService.getAddress(request.query);
+            if (result.statusCode) {
+                reply.code(result.statusCode).send(result);
+                return;
+            }
             reply.code(HTTP_CODE.OK).send(result);
         },
     });
@@ -31,15 +35,18 @@ function mapApi(fastify, _options, done) {
 
         // Validate text is present in the params
         [CONTROLLER_HOOK.ON_REQUEST]: (request, reply, done) => {
-            if (!validateParams(request, reply, ['text'], [])) {
-                return;
+            if (validateParams(request, reply, ['text'], [])) {
+                done();
             }
-            done();
         },
 
         // Handle request
         [CONTROLLER_HOOK.HANDLER]: async (request, reply) => {
             const result = await geoService.autocomplete(request.query);
+            if (result.statusCode) {
+                reply.code(result.statusCode).send(result);
+                return;
+            }
             reply.code(HTTP_CODE.OK).send(result);
         },
     });

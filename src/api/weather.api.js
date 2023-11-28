@@ -9,14 +9,17 @@ function weatherApi(fastify, _options, done) {
         url: WEATHER_API_PATH.CURRENT,
 
         [CONTROLLER_HOOK.ON_REQUEST]: (request, reply, done) => {
-            if (!validateParams(request, reply, ['lat', 'lon'], [])) {
-                return;
+            if (validateParams(request, reply, ['lat', 'lon'], [])) {
+                done();
             }
-            done();
         },
 
         [CONTROLLER_HOOK.HANDLER]: async (request, reply) => {
             const result = await weatherService.getDailyForecast(request.query);
+            if (result.statusCode) {
+                reply.code(result.statusCode).send(result);
+                return;
+            }
             reply.code(HTTP_CODE.OK).send(result);
         },
     });
@@ -27,16 +30,15 @@ function weatherApi(fastify, _options, done) {
         url: WEATHER_API_PATH.CURRENT_HOURLY,
 
         [CONTROLLER_HOOK.ON_REQUEST]: (request, reply, done) => {
-            if (!validateParams(request, reply, ['lat', 'lon', 'date'], ['date'])) {
-                return;
+            if (validateParams(request, reply, ['lat', 'lon', 'date'], ['date'])) {
+                done();
             }
-            done();
         },
 
         [CONTROLLER_HOOK.HANDLER]: async (request, reply) => {
             const result = await weatherService.getDailyForecast(request.query, true);
-            if (result.code) {
-                reply.code(result.code).send({ code: result.code, message: `${result.message}: ${result.parameters?.join(', ') ?? ''}`});
+            if (result.statusCode) {
+                reply.code(result.statusCode).send(result);
                 return;
             }
             reply.code(HTTP_CODE.OK).send(result);
@@ -49,16 +51,15 @@ function weatherApi(fastify, _options, done) {
         url: WEATHER_API_PATH.ROOT,
 
         [CONTROLLER_HOOK.ON_REQUEST]: (request, reply, done) => {
-            if (!validateParams(request, reply, ['lat', 'lon', 'start_date', 'end_date'], ['start_date', 'end_date'])) {
-                return;
+            if (validateParams(request, reply, ['lat', 'lon', 'start_date', 'end_date'], ['start_date', 'end_date'])) {
+                done();
             }
-            done();
         },
 
         [CONTROLLER_HOOK.HANDLER]: async (request, reply) => {
             const result = await weatherService.getPeriodForecast(request.query);
-            if (result.code) {
-                reply.code(result.code).send({ code: result.code, message: `${result.message}: ${result.parameters?.join(', ') ?? ''}`});
+            if (result.statusCode) {
+                reply.code(result.statusCode).send(result);
                 return;
             }
             reply.code(HTTP_CODE.OK).send(result);

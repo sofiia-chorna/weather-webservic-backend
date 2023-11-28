@@ -1,6 +1,6 @@
 import { ENV, HTTP_HEADER, HTTP_METHOD, MAP_API_PATH } from '../common/common.js';
 import { ApiService } from './abstract/api.service.js';
-import { getUniqueByKey } from '../helpers/array/array.helper.js';
+import { getUniqueBy } from '../helpers/array/array.helper.js';
 
 class GeoService extends ApiService {
     /**
@@ -20,12 +20,13 @@ class GeoService extends ApiService {
 
     /**
      * @param {!Object} options
-     * @return {!Promise<!Array<!Object>>}
+     * @return {Promise<!Object>}
      */
     async autocomplete(options) {
+        const params = options.bias ? { ...options, bias: `proximity:${options.bias}` } : options;
         const url = this.buildUrlFromParams({
             replaceRoute: MAP_API_PATH.AUTOCOMPLETE,
-            params: { ...options, bias: `proximity:${options.bias}` },
+            params: params,
             useDefaultKeys: true,
         });
 
@@ -36,13 +37,18 @@ class GeoService extends ApiService {
             headers: { [HTTP_HEADER.KEY.CONTENT_TYPE]: HTTP_HEADER.VALUE.APPLICATION_JSON },
         });
 
-        // Format payload
-        const entries = response.features.map(({ properties: { country, state, city, lon, lat }}) => (
-            { country, state, city, lon, lat, formatted: `${country}, ${state}, ${city}`}
-        ));
+        // Catch API errors
+        if (response.error) {
+            return this.createError(response.statusCode, response.message);
+        }
 
-        // Filter by city key
-        return getUniqueByKey(entries, 'city');
+        // Format payload
+        const entries = response.features?.map(({ properties: { country, state, city, lon, lat }}) => (
+            { country, lon, lat, state: state ?? city, city: city ?? null, formatted: `${country}, ${state ?? city}${city ? `, ${city}` : ''}`}
+        )) ?? [];
+
+        // Filter by city.country key
+        return getUniqueBy(entries, (item) => `${item['city']}.${item['country']}`);
     }
 }
 

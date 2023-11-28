@@ -8,4 +8,14 @@ function getUniqueByKey(array, key) {
     return Array.from(uniqueMap.values());
 }
 
-export { getUniqueByKey };
+/**
+ * @param {Array<!Object>} array
+ * @param {function(!Object)} getKey
+ * @return {Array<!Object>}
+ */
+function getUniqueBy(array, getKey) {
+    const uniqueMap = new Map(array.map((item) => [getKey(item), item]));
+    return Array.from(uniqueMap.values());
+}
+
+export { getUniqueByKey, getUniqueBy };

@@ -1,4 +1,6 @@
 import { HttpService } from './http.service.js';
+import { HTTP_CODE, HTTP_MESSAGE } from '../../common/common.js';
+import { ApiError } from '../../api/ApiError.js';
 
 class ApiService extends HttpService {
     /**
@@ -57,6 +59,15 @@ class ApiService extends HttpService {
 
         // Retrieve as a string
         return url.toString();
+    }
+
+    /**
+     * @param {number} errorCode
+     * @param {string} message
+     * @return {!Object}
+     */
+    createError(errorCode, message) {
+        return ApiError.create(errorCode || HTTP_CODE.INTERNAL_SERVER_ERROR, message || HTTP_MESSAGE.INTERNAL_SERVER_ERROR);
     }
 }
 

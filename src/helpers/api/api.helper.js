@@ -1,4 +1,5 @@
-import { HTTP_CODE, DISTANCE_UNITS, TEMPERATURE_UNITS } from '../../common/common.js';
+import { HTTP_CODE, DISTANCE_UNITS, TEMPERATURE_UNITS, HTTP_MESSAGE } from '../../common/common.js';
+import { ApiError } from '../../api/ApiError.js';
 
 /**
  * @param {!Object} params
@@ -54,10 +55,9 @@ function checkUnitParams(params) {
  * @param {import('fastify').FastifyReply} reply
  * @param {!Array<string>} mandatoryParams
  * @param {!Array<string>} dateParams
- * @param {number} [errorCode=400]
  * @return {boolean}
  */
-function validateParams(request, reply, mandatoryParams, dateParams, errorCode = HTTP_CODE.BAD_REQUEST) {
+function validateParams(request, reply, mandatoryParams, dateParams) {
     // Check correctness
     const mandatoryParamsErrors = checkMandatoryParams(request.query, mandatoryParams);
     const dateValidationErrors = dateParams
@@ -66,10 +66,10 @@ function validateParams(request, reply, mandatoryParams, dateParams, errorCode =
         .join(', ');
     const unitParamsError = checkUnitParams(request.query);
 
-    // Send error if needed
-    const error = mandatoryParamsErrors || dateValidationErrors || unitParamsError;
-    if (error) {
-        reply.code(errorCode).send({ code: errorCode, message: error });
+    // Get error message
+    const errorMessage = mandatoryParamsErrors || dateValidationErrors || unitParamsError;
+    if (errorMessage) {
+        reply.code(HTTP_CODE.BAD_REQUEST).send(ApiError.create(HTTP_CODE.BAD_REQUEST, errorMessage));
         return false;
     }
 

@@ -25,7 +25,7 @@ class MapService extends ApiService {
     async getAddress(options) {
         const url = this.buildUrlFromParams({
             replaceRoute: MAP_API_PATH.ADDRESS,
-            params: { lon: options.longitude, lat: options.latitude },
+            params: options,
             useDefaultKeys: true,
         });
 
@@ -51,7 +51,7 @@ class MapService extends ApiService {
         }
 
         // API error
-        return response;
+        return this.createError(response.cod || response.code, response.message);
     }
 }
 

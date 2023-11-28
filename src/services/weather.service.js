@@ -37,7 +37,7 @@ class WeatherService extends ApiService {
         lastMinute.setMinutes(59, 59, 999);
 
         // Pick minute precipitations of the hour
-        const precipitations = minutes.filter((v) => v.dt > firstMinute && v.dt < lastMinute).map((v) => v.precipitation);
+        const precipitations = minutes ? minutes.filter((v) => v.dt > firstMinute && v.dt < lastMinute).map((v) => v.precipitation) : [];
 
         // Get max value of them
         return Math.max(...precipitations);
@@ -48,7 +48,7 @@ class WeatherService extends ApiService {
      * @return {!Array<!Object>}
      */
     pickDataFromWeather(weather) {
-        return weather.map((v) => ({ main: v.main, description: v.description }));
+        return weather ? weather.map((v) => ({ main: v.main, description: v.description })) : [];
     }
 
     /**
@@ -94,7 +94,7 @@ class WeatherService extends ApiService {
 
         // Catch API errors
         if (response.code || response.cod) {
-            return { ...response, code: response.code || response.cod };
+            return this.createError(response.code || response.cod,`${response.message}: ${response.parameters?.join(', ') ?? ''}`);
         }
 
         // Hourly Forecast
@@ -143,7 +143,7 @@ class WeatherService extends ApiService {
             humidity: humidity,
             visibility: visibility,
             wind_speed: windSpeed,
-            precipitation: Math.max(...response.minutely?.map((v) => v.precipitation)) ?? null,
+            precipitation: response.minutely ? Math.max(...response.minutely.map((v) => v.precipitation)) : 0,
             clouds: clouds,
             uvi: uvi,
             sunrise: sunrise,

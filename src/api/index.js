@@ -1,7 +1,7 @@
 import { Router } from './Router.js';
 import { API_PATH } from '../common/common.js';
-import { weatherApi } from './weatherApi.js';
-import { mapApi } from './mapApi.js';
+import { weatherApi } from './weather.api.js';
+import { mapApi } from './map.api.js';
 
 /**
  * Handler Map
