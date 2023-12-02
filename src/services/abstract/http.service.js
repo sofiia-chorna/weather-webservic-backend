@@ -8,6 +8,9 @@ class HttpService {
     async request(params) {
         const { url, body, method, headers } = params;
         try {
+            // TODO meaningfull logging
+            console.log(url)
+
             // Run request
             const response = await fetch(url, {
                 method: method,

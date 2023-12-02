@@ -6,6 +6,7 @@ const HTTP_MESSAGE = {
     INVALID_TOKEN: 'Invalid token',
     UNAUTHORIZED: 'Unauthorized',
     BAD_REQUEST: 'Bad Request',
+    NOR_FOUND: 'Not Found',
 };
 
 export { HTTP_MESSAGE };

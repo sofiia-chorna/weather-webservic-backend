@@ -1,6 +1,6 @@
-import { ENV, HTTP_HEADER, HTTP_METHOD, MAP_API_PATH } from '../common/common.js';
+import { ENV, HTTP_HEADER, HTTP_METHOD, MAP_API_PATH, LANG, HTTP_CODE, HTTP_MESSAGE } from '../common/common.js';
 import { ApiService } from './abstract/api.service.js';
-import { getUniqueBy } from '../helpers/array/array.helper.js';
+import { getUniqueBy, offsetStringToNumber } from '../helpers/helpers.js';
 
 class GeoService extends ApiService {
     /**
@@ -11,9 +11,12 @@ class GeoService extends ApiService {
             url: ENV.API.GEO.API_PATH,
             defaultKeys: {
                 ['apiKey']: ENV.API.GEO.KEY,
+                ['type']: 'city',
+                ['lang']: LANG.EN,
             },
             routeMap: new Map([
                 [MAP_API_PATH.AUTOCOMPLETE, '/autocomplete'],
+                [MAP_API_PATH.ADDRESS, '/reverse'],
             ]),
         });
     }
@@ -29,7 +32,28 @@ class GeoService extends ApiService {
             params: params,
             useDefaultKeys: true,
         });
+        return this.processApiRequest(url);
+    }
 
+    /**
+     * @param {!Object} options
+     * @return {Promise<!Object>}
+     */
+    async getAddress(options) {
+        const url = this.buildUrlFromParams({
+            replaceRoute: MAP_API_PATH.ADDRESS,
+            params: options,
+            useDefaultKeys: true,
+        });
+        return this.processApiRequest(url, true);
+    }
+
+    /**
+     * @param {string} url
+     * @param {boolean} useFirstEntry
+     * @return {Promise<!Object>}
+     */
+    async processApiRequest(url, useFirstEntry = false) {
         // Run request
         const response = await this.request({
             url: url,
@@ -42,13 +66,37 @@ class GeoService extends ApiService {
             return this.createError(response.statusCode, response.message);
         }
 
-        // Format payload
-        const entries = response.features?.map(({ properties: { country, state, city, lon, lat }}) => (
-            { country, lon, lat, state: state ?? city, city: city ?? null, formatted: `${country}, ${state ?? city}${city ? `, ${city}` : ''}`}
-        )) ?? [];
+        const entries = response.features;
+        if (useFirstEntry && Array.isArray(entries)) {
+            const firstEntry = entries[0];
+            return firstEntry
+                ? this.formatPayload(firstEntry)
+                : this.createError(HTTP_CODE.NOT_FOUND, HTTP_MESSAGE.NOR_FOUND);
+        }
 
-        // Filter by city.country key
-        return getUniqueBy(entries, (item) => `${item['city']}.${item['country']}`);
+        // Format to the necessary scheme
+        const cities = entries?.map(this.formatPayload) ?? [];
+        return getUniqueBy(cities, (item) => `${item.city}.${item.country}`);
+    }
+
+    /**
+     * @param {!Object} entry
+     * @return {!Object}
+     */
+    formatPayload(entry) {
+        // Pick fields
+        const { properties: { country, state, city, lon, lat, timezone }} = entry;
+
+        // Get desired format
+        return {
+            country: country,
+            lon: lon,
+            lat: lat,
+            city: city,
+            state: state ?? city,
+            formatted: `${country}, ${state ?? city}${city ? `, ${city}` : ''}`,
+            timezone_offset: offsetStringToNumber(timezone.offset_STD),
+        };
     }
 }
 

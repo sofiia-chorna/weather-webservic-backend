@@ -1,8 +1,7 @@
 import { MAP_API_PATH, HTTP_METHOD, CONTROLLER_HOOK, HTTP_CODE } from '../common/common.js';
-import { mapService } from '../services/services.js';
 import { geoService } from '../services/services.js';
-import { validateParams } from '../helpers/helpers.js';
-import { ApiError } from './ApiError.js';
+import { validateAndTransformResponse, validateParams } from '../helpers/helpers.js';
+import { addressSchema, addressSchemaArray } from '../models/models.js';
 
 function mapApi(fastify, _options, done) {
     // Get address from longitude and latitude
@@ -19,13 +18,15 @@ function mapApi(fastify, _options, done) {
 
         // Handle request
         [CONTROLLER_HOOK.HANDLER]: async (request, reply) => {
-            const result = await mapService.getAddress(request.query);
+            const result = await geoService.getAddress(request.query);
             if (result.statusCode) {
                 reply.code(result.statusCode).send(result);
                 return;
             }
             reply.code(HTTP_CODE.OK).send(result);
         },
+
+        [CONTROLLER_HOOK.ON_SEND]: async (_request, reply, payload) => validateAndTransformResponse(reply, payload, addressSchema),
     });
 
     // Get address prediction from user input
@@ -49,6 +50,8 @@ function mapApi(fastify, _options, done) {
             }
             reply.code(HTTP_CODE.OK).send(result);
         },
+
+        [CONTROLLER_HOOK.ON_SEND]: async (_request, reply, payload) => validateAndTransformResponse(reply, payload, addressSchemaArray),
     });
 
     done();
