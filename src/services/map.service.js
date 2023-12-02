@@ -1,4 +1,4 @@
-import { ENV, HTTP_HEADER, HTTP_METHOD, MAP_API_PATH } from '../common/common.js';
+import { ENV, HTTP_HEADER, HTTP_METHOD, LANG, MAP_API_PATH } from '../common/common.js';
 import { ApiService } from './abstract/api.service.js';
 import { getCountryNameByCode } from '../helpers/helpers.js';
 
@@ -11,6 +11,7 @@ class MapService extends ApiService {
             url: ENV.API.MAP.API_PATH,
             defaultKeys: {
                 ['appid']: ENV.API.MAP.KEY,
+                ['lang']: LANG.EN,
             },
             routeMap: new Map([
                 [MAP_API_PATH.ADDRESS, '/reverse'],
@@ -43,8 +44,8 @@ class MapService extends ApiService {
             return {
                 country: country,
                 city: firstEntry.name,
-                state: firstEntry.state,
-                formatted: `${country}, ${firstEntry.state}, ${firstEntry.name}`,
+                state: firstEntry.state ?? firstEntry.name,
+                formatted: `${country}, ${firstEntry.state ?? firstEntry.name}, ${firstEntry.name ?? firstEntry.state}`,
                 lat: firstEntry.lat,
                 lon: firstEntry.lon,
             };

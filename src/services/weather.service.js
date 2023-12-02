@@ -1,4 +1,4 @@
-import { ENV, HTTP_METHOD, HTTP_HEADER, WEATHER_API_PATH, TEMPERATURE_UNITS, DISTANCE_UNITS, UNITS } from '../common/common.js';
+import { ENV, HTTP_METHOD, HTTP_HEADER, WEATHER_API_PATH, TEMPERATURE_UNITS, DISTANCE_UNITS, UNITS, LANG } from '../common/common.js';
 import { formatDate, dateToTimestampInSeconds, generateRandomOffset, addOffset } from '../helpers/helpers.js';
 import { ApiService } from './abstract/api.service.js';
 
@@ -12,6 +12,7 @@ class WeatherService extends ApiService {
             defaultKeys: {
                 ['appid']: ENV.API.WEATHER.KEY,
                 ['units']: UNITS.METRIC,
+                ['lang']: LANG.EN,
             },
             routeMap: new Map([
                 [WEATHER_API_PATH.ROOT, '/timemachine'],
@@ -93,7 +94,7 @@ class WeatherService extends ApiService {
         });
 
         // Catch API errors
-        if (response.code || response.cod) {
+        if (response.code || response.cod || !response.current) {
             return this.createError(response.code || response.cod,`${response.message}: ${response.parameters?.join(', ') ?? ''}`);
         }
 
@@ -120,7 +121,7 @@ class WeatherService extends ApiService {
                         humidity: value.humidity,
                         visibility: value.visibility,
                         wind_speed: value.wind_speed,
-                        precipitation: this.getHourPrecipitation(response.minutely, value.dt), // only minutely has precipitation
+                        precipitation: this.getHourPrecipitation(response.minutely, value.dt) ?? 0, // only minutely has precipitation
                         clouds: value.clouds,
                         uvi: value.uvi,
                         sunrise: response.current.sunrise,
@@ -179,7 +180,7 @@ class WeatherService extends ApiService {
             });
 
             // Date is not available
-            if (response.code ?? response.cod) {
+            if (response.code ?? response.cod ?? !response.data) {
                 result.push({ coord: { lon: params.lon, lat: params.lat }, date: formatDate(curDate), weather: [] });
             }
 

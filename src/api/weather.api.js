@@ -27,7 +27,7 @@ function weatherApi(fastify, _options, done) {
     // Get Current Forecast Hourly
     fastify.route({
         method: HTTP_METHOD.GET,
-        url: WEATHER_API_PATH.CURRENT_HOURLY,
+        url: WEATHER_API_PATH.HOURLY,
 
         [CONTROLLER_HOOK.ON_REQUEST]: (request, reply, done) => {
             if (validateParams(request, reply, ['lat', 'lon', 'date'], ['date'])) {
