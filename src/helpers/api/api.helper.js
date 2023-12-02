@@ -77,4 +77,34 @@ function validateParams(request, reply, mandatoryParams, dateParams) {
     return true;
 }
 
-export { checkMandatoryParams, checkDateParams, validateParams };
+/**
+ * @param {import('fastify').FastifyReply} reply
+ * @param {string} payload
+ * @param {import('joi').Joi.AnySchema} schema
+ * @return {string}
+ */
+function validateAndTransformResponse(reply, payload, schema) {
+    try {
+        const response = JSON.parse(payload);
+
+        // Error from API
+        if (response.statusCode) {
+            return payload;
+        }
+
+        // Validate fields in response
+        const validationResult = schema.validate(response);
+        if (validationResult.error) {
+            // TODO: create a logger
+            console.log(validationResult.error);
+        }
+        return JSON.stringify(validationResult.value);
+    }
+    // Incorrect json
+    catch (error) {
+        reply.code(HTTP_CODE.INTERNAL_SERVER_ERROR);
+        return JSON.stringify(ApiError.create(HTTP_CODE.INTERNAL_SERVER_ERROR, HTTP_MESSAGE.INTERNAL_SERVER_ERROR));
+    }
+}
+
+export { checkMandatoryParams, checkDateParams, validateParams, validateAndTransformResponse };

@@ -38,10 +38,20 @@ class WeatherService extends ApiService {
         lastMinute.setMinutes(59, 59, 999);
 
         // Pick minute precipitations of the hour
-        const precipitations = minutes ? minutes.filter((v) => v.dt > firstMinute && v.dt < lastMinute).map((v) => v.precipitation) : [];
+        if (minutes) {
+            const precipitations = minutes.filter((v) => {
+                const d = new Date(v.dt * 1000);
+                return d > firstMinute && d < lastMinute;
+            }).map((v) => v.precipitation);
 
-        // Get max value of them
-        return Math.max(...precipitations);
+            // Get max value of them
+            if (precipitations.length > 0) {
+                return Math.max(...precipitations);
+            }
+        }
+
+        // No value available, return default
+        return 0;
     }
 
     /**
@@ -121,17 +131,18 @@ class WeatherService extends ApiService {
                         humidity: value.humidity,
                         visibility: value.visibility,
                         wind_speed: value.wind_speed,
-                        precipitation: this.getHourPrecipitation(response.minutely, value.dt) ?? 0, // only minutely has precipitation
+                        precipitation: this.getHourPrecipitation(response.minutely, value.dt), // only minutely has precipitation
                         clouds: value.clouds,
                         uvi: value.uvi,
                         sunrise: response.current.sunrise,
-                        sunset: response.current.sunset
+                        sunset: response.current.sunset,
+                        feels_like: value.feels_like,
                     })
                 );
         }
 
         // Pick necessary properties
-        const { temp, pressure, humidity, visibility, wind_speed: windSpeed, uvi, clouds, sunrise, sunset } = response.current;
+        const { temp, pressure, humidity, visibility, wind_speed: windSpeed, uvi, clouds, sunrise, sunset, feels_like } = response.current;
 
         // Build response
         return {
@@ -148,7 +159,8 @@ class WeatherService extends ApiService {
             clouds: clouds,
             uvi: uvi,
             sunrise: sunrise,
-            sunset: sunset
+            sunset: sunset,
+            feels_like: feels_like,
         };
     }
 
@@ -202,7 +214,8 @@ class WeatherService extends ApiService {
                     uvi: Number(Math.random(10).toFixed(2)), // mock, no data
                     sunrise: dayWeather.sunrise,
                     sunset: dayWeather.sunset,
-                    date: formatDate(dayWeather.dt)
+                    date: formatDate(dayWeather.dt),
+                    feels_like: dayWeather.feels_like,
                 });
             }
 

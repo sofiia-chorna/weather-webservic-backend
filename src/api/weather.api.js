@@ -1,6 +1,7 @@
 import { WEATHER_API_PATH, HTTP_METHOD, CONTROLLER_HOOK, HTTP_CODE } from '../common/common.js';
+import { weatherSchema, weatherSchemaArray, weatherWithDateSchemaArray } from '../models/models.js';
 import { weatherService } from '../services/services.js';
-import { validateParams } from '../helpers/helpers.js';
+import { validateParams, validateAndTransformResponse } from '../helpers/helpers.js';
 
 function weatherApi(fastify, _options, done) {
     // Get Current Forecast
@@ -22,6 +23,8 @@ function weatherApi(fastify, _options, done) {
             }
             reply.code(HTTP_CODE.OK).send(result);
         },
+
+        [CONTROLLER_HOOK.ON_SEND]: async (_request, reply, payload) => validateAndTransformResponse(reply, payload, weatherSchema),
     });
 
     // Get Current Forecast Hourly
@@ -43,6 +46,8 @@ function weatherApi(fastify, _options, done) {
             }
             reply.code(HTTP_CODE.OK).send(result);
         },
+
+        [CONTROLLER_HOOK.ON_SEND]: async (_request, reply, payload) => validateAndTransformResponse(reply, payload, weatherSchemaArray),
     });
 
     // Get Forecast for date period
@@ -64,6 +69,8 @@ function weatherApi(fastify, _options, done) {
             }
             reply.code(HTTP_CODE.OK).send(result);
         },
+
+        [CONTROLLER_HOOK.ON_SEND]: async (_request, reply, payload) => validateAndTransformResponse(reply, payload, weatherWithDateSchemaArray),
     });
 
     done();
