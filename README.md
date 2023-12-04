@@ -42,7 +42,7 @@ This repository comprises the code for the backend part of the weather service d
 <img src="./doc/services-class-diagram.svg" alt="image" width="500" height="500">
 
 ### Server State Diagram
-<img src="./doc/server-state-diagram.svg" alt="image" width="1000" height="auto">
+<img src="./doc/server-state-diagram.png" alt="image" width="1000" height="auto">
 
 ### External APIs:
 1. [Openweathermap](https://openweathermap.org/guide)
