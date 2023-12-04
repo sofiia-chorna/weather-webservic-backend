@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha tests/**/*.spec.js"
   },
   "author": "Sofiia Chorna",
   "license": "ISC",
@@ -14,7 +14,12 @@
     "@fastify/cors": "8.4.1",
     "dotenv": "16.3.1",
     "fastify": "4.24.3",
+    "joi": "17.11.0",
     "pino-pretty": "10.2.3",
     "qs": "6.11.2"
+  },
+  "devDependencies": {
+    "chai": "4.3.10",
+    "mocha": "10.2.0"
   }
 }

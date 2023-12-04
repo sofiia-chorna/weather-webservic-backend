@@ -41,4 +41,4 @@ function dateToTimestampInSeconds(date) {
     return Math.floor(date.getTime() / 1000);
 }
 
-export { formatDate, dateToTimestampInSeconds };
+export { formatDate, dateToTimestampInSeconds, isDate, isTimestamp };

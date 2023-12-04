@@ -107,4 +107,4 @@ function validateAndTransformResponse(reply, payload, schema) {
     }
 }
 
-export { checkMandatoryParams, checkDateParams, validateParams, validateAndTransformResponse };
+export { checkMandatoryParams, checkDateParams, validateParams, validateAndTransformResponse, checkUnitParams };

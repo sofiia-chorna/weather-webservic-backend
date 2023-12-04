@@ -9,7 +9,7 @@ class HttpService {
         const { url, body, method, headers } = params;
         try {
             // TODO meaningfull logging
-            console.log(url)
+            console.log("Requested URL: ", url);
 
             // Run request
             const response = await fetch(url, {
